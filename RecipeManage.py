@@ -111,22 +111,4 @@ class RecipeManager:
             name_list.append(item.get_name())
         return name_list
 
-        # print("Input the number of the recipe you want: ")
-    #    a = int(input("Input the number of the recipe you want: "))
-    #    print(self.recipes[a].get_instructions())
 
-
-# Test code
-
-newuser = User()
-newuser.set_ingredients()  # user sets the ingredients
-iset = newuser.get_ingredients()  # return the ingredients as a set
-
-tester = RecipeManager()
-tester.add_recipes(iset)
-tester.sort_recipes()
-
-# tester.pick_recipe()
-
-# while True:
-#   try:

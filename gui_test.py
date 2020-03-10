@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import csv
 import Recipe
 from RecipeManage import RecipeManager
+
 # user ingredients list
 user_ingredients_list = []
 possible_recipes = []
