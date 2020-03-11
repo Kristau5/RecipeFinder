@@ -83,15 +83,15 @@ ingredients_layout = [
 # --------
 
 # --- layout 2 ---
-"""
-col = create_layout()
-layout = [[sg.Column(col, scrollable=True, vertical_scroll_only=True)],
-          [sg.Text('bottom row')]]
 
-tab_layout = [[sg.T('tab 2')]]
-layout_b = [[sg.TabGroup([[sg.Tab('Tab 1', layout), sg.Tab('Tab 2', tab_layout)]])],
-            [sg.Button('Back')]]
-"""
+# col = create_layout()
+# layout = [[sg.Column(col, scrollable=True, vertical_scroll_only=True)],
+#           [sg.Text('bottom row')]]
+#
+# tab_layout = [[sg.T('tab 2')]]
+# layout_b = [[sg.TabGroup([[sg.Tab('Tab 1', layout), sg.Tab('Tab 2', tab_layout)]])],
+#             [sg.Button('Back')]]
+
 # -----------------
 sg.theme('DarkAmber')
 
