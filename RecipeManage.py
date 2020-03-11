@@ -75,11 +75,12 @@ class RecipeManager:
         # append recipe to the list, have recipe as a paramater
         with open('recipelist.csv', 'r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter='|')
-
+            self.recipes.clear()
             for row in csv_reader:
                 i = [h.strip() for h in row['Ingredients'].split(',')]
                 x = self.in_common(user_list, i)
-                self.recipes.append(Recipe(row['Name'], row['Ingredients'], row['Link'], x))
+                if x > 0:
+                    self.recipes.append(Recipe(row['Name'], row['Ingredients'], row['Link'], x))
 
     def sort_recipes(self):
         # loop through recipe list
@@ -110,5 +111,10 @@ class RecipeManager:
         for item in r_list:
             name_list.append(item.get_name())
         return name_list
+
+    def get_link(self, r_list, r_name):
+        for item in r_list:
+            if item.get_name() == r_name:
+                return item.get_url()
 
 
