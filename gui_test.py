@@ -30,6 +30,23 @@ def get_ingredients(category):
     return test_list
 
 
+def recipe_layout(pos_recipes):
+    frames = []
+    for recipe in pos_recipes:
+        name = recipe.get_name()
+        frames.append(sg.Frame(title="testing recipe frames", layout=[[sg.Text(text=name, enable_events=True)]]))
+
+    list_frames = [frames[x:x+3] for x in range(0, len(frames), 3)]
+    list_frames.append([sg.Button('Back')])
+
+    return list_frames
+
+def recipe_link(pos_recipes, r_name):
+
+    for recipe in pos_recipes:
+        if r_name == recipe.get_name():
+            wb.open_new_tab(recipe.get_url())
+
 def create_layout(category):
     """
     Creates the layout for window 2, containing all of the ingredients.
@@ -39,7 +56,12 @@ def create_layout(category):
     """
     checkboxes = []
     for ingredient in get_ingredients(category):
-        checkboxes.append([sg.Checkbox(ingredient, size=(30, 15), enable_events=True)])
+        if ingredient in user_ingredients_list:
+            # if the user already selected the ingredient it will remain checked
+            checkboxes.append([sg.Checkbox(ingredient, size=(30, 15), enable_events=True, default=True)])
+        else:
+            # otherwise it will remain unchecked
+            checkboxes.append([sg.Checkbox(ingredient, size=(30, 15), enable_events=True)])
     # layout = [[sg.Column(checkboxes, scrollable=True, vertical_scroll_only=True)]]
     # will display a list of ingredients the user indicated thus far
     user_listbox = [
@@ -49,7 +71,7 @@ def create_layout(category):
         [sg.Button('Remove Selected')]]
 
     layout_c = [
-        [sg.Column(checkboxes, scrollable=True, vertical_scroll_only=True), sg.Column(user_listbox)],
+        [sg.Column(checkboxes, size=(360, 432), scrollable=True, vertical_scroll_only=True), sg.Column(user_listbox)],
         [sg.Button('Back'), sg.Button('Submit Changes')]]
 
     return layout_c
@@ -67,7 +89,10 @@ def update_ingredient_list(category, ingredient_dict, user_list):
     # user_ingredients = user_ingredients_list
     # Searches through dict for ingredients to add.
     for key, value in ingredient_dict.items():
-        if value:
+        if value and (key != '-listbox-') and (ingredient_list[key] not in user_ingredients_list):
+            # only selects if value is true which means the ingredient was selected
+            # also ignores everything in listbox
+            # plus it checks if the ingredient is already in the user ingredients list
             user_ingredients_list.append(ingredient_list[key])
 
 
@@ -108,6 +133,7 @@ sg.theme('DarkAmber')
 
 window = sg.Window('Ingredient Selection', ingredients_layout, font='Courier 12')
 win2_active = False
+win3_active = False
 
 field_names = ['Dairy', 'Vegetable', 'Fruit', 'Seafood', 'Meat', 'Grain', 'Herbs & Spices', 'Oils',
                'Condiments', 'Sauces', 'Soups', 'Baking', 'Nuts & Legumes', 'Beverages', 'Other']
@@ -120,20 +146,27 @@ while True:
     if event is None:
         break
     # updates the list of recipes
-    if values.get('-tab-') == '-recipe-tab-':
+    if values.get('-tab-') == '-recipe-tab-' and (not win3_active):
         manager = RecipeManager()
         manager.add_recipes(user_ingredients_list)
         raw_recipes_sorted = manager.sort_recipes()
         possible_recipes = manager.get_recipe_names(raw_recipes_sorted)
         window['-recipe-list-box-'].update(values=possible_recipes)
-
-        # take user to the recipe's web page
-        if event == '-recipe-list-box-':
-            selected_recipe = (values.get('-recipe-list-box-'))
-            if selected_recipe:
-                link = manager.get_link(raw_recipes_sorted, selected_recipe[0])
-                wb.open_new_tab(link)
-
+        # print(raw_recipes_sorted[0].get_name())
+        win3_active = True
+        window.hide()
+        layout3 = recipe_layout(raw_recipes_sorted)
+        window3 = sg.Window('Recipe', layout3, font= 'Courier 12')
+        while True:
+            rev, rvals = window3.read()
+            # print(rev)
+            if rev == 'Back':
+                window3.close()
+                win3_active = False
+                window.un_hide()
+                break
+            if rev:
+                recipe_link(raw_recipes_sorted, rev)
     # opens the ingredient selection window
     if event in field_names and not win2_active:
         win2_active = True
