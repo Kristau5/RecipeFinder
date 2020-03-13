@@ -46,6 +46,15 @@ class Recipe:
         """
         return self.url  # returns a string with the Recipe objects instructions.
 
+    def get_num_common(self):
+        """
+        Get's the number of ingredients in common.
+
+        :return: Number of ingredients in common.
+        :rtype: int
+        """
+        return self.common
+
 # test class
 
 # recipea = Recipe( "peanut butter & jelly sandwhich ", "peanut butter, jelly, bread", "put the three together ", 2)

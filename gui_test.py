@@ -3,10 +3,33 @@ import csv
 import Recipe
 from RecipeManage import RecipeManager
 import webbrowser as wb
-
+from PIL import Image
+import os
+import requests
+from os import path
 # user ingredients list
 user_ingredients_list = []
 possible_recipes = []
+
+
+def to_png(infile, r_name):
+    """
+    Takes in one file format and outputs one suitable for use in pysimplegui.
+
+    :param str infile: probably a url
+    :param str r_name: The recipes name to save the file
+    :return:
+    """
+    max_size = (400, 200)
+    f, e = os.path.splitext(infile)
+    outfile = r_name + ".png"
+    print("I'm here")
+    if not path.exists(outfile): # if the file does not exist
+        print("in loop")
+        with Image.open(requests.get(infile, stream=True).raw) as im:
+            im.thumbnail(max_size)
+            im.save(outfile)
+    return outfile
 
 
 # returns a list of ingredients
@@ -32,20 +55,27 @@ def get_ingredients(category):
 
 def recipe_layout(pos_recipes):
     frames = []
+    common_text = ' ingredients in common!'
+    cool_pic = to_png('https://images.media-allrecipes.com/userphotos/830680.jpg', 'temp2')
     for recipe in pos_recipes:
         name = recipe.get_name()
-        frames.append(sg.Frame(title="testing recipe frames", layout=[[sg.Text(text=name, enable_events=True)]]))
+        common = recipe.get_num_common()
+        frames.append(sg.Frame(title="",
+                               layout=[[sg.Image(filename=cool_pic, size=(400, 200))],
+                                       [sg.Text(text=name, enable_events=True, size=(45, 1))],
+                                       [sg.Text(text= f'{common}{common_text}', text_color='gray')]], size=(50, 8)))
 
-    list_frames = [frames[x:x+3] for x in range(0, len(frames), 3)]
-    list_frames.append([sg.Button('Back')])
+    list_frames = [frames[x:x + 3] for x in range(0, len(frames), 3)]
+    # list_frames.append([sg.Button('Back')])
 
     return list_frames
 
-def recipe_link(pos_recipes, r_name):
 
+def recipe_link(pos_recipes, r_name):
     for recipe in pos_recipes:
         if r_name == recipe.get_name():
             wb.open_new_tab(recipe.get_url())
+
 
 def create_layout(category):
     """
@@ -122,8 +152,9 @@ recipe_comp_layout = [
 columns_layout = [[sg.Column(col_a), sg.Column(col_b), sg.Column(col_c)]]
 # creates three columns but as such it acts as three separate containers
 ingredients_layout = [
-    [sg.TabGroup([[sg.Tab('Ingredients', columns_layout, key='-ingredients-tab-'), sg.Tab('Recipes', recipe_comp_layout, key='-recipe-tab-')]], enable_events=True, key='-tab-')],
-    ]
+    [sg.TabGroup([[sg.Tab('Ingredients', columns_layout, key='-ingredients-tab-'),
+                   sg.Tab('Recipes', recipe_comp_layout, key='-recipe-tab-')]], enable_events=True, key='-tab-')],
+]
 # --------
 
 # set the windows theme
@@ -142,7 +173,6 @@ while True:
     event, values = window.read()
     # event is the press of a button, the value is the weight tied to it?
     # print(event, values)
-    # print(event,values)
     if event is None:
         break
     # updates the list of recipes
@@ -153,10 +183,13 @@ while True:
         possible_recipes = manager.get_recipe_names(raw_recipes_sorted)
         window['-recipe-list-box-'].update(values=possible_recipes)
         # print(raw_recipes_sorted[0].get_name())
+        # ---- make a new window for the recipe's -----
         win3_active = True
         window.hide()
-        layout3 = recipe_layout(raw_recipes_sorted)
-        window3 = sg.Window('Recipe', layout3, font= 'Courier 12')
+        layout3 = [[sg.Column(recipe_layout(raw_recipes_sorted), scrollable=True, size=(1600, 800),
+                              vertical_scroll_only=True)],
+                   [sg.Button('Back')]]
+        window3 = sg.Window('Recipe', layout3, font='Courier 12')
         while True:
             rev, rvals = window3.read()
             # print(rev)
@@ -167,7 +200,7 @@ while True:
                 break
             if rev:
                 recipe_link(raw_recipes_sorted, rev)
-    # opens the ingredient selection window
+    # ------------opens the ingredient selection window-----------
     if event in field_names and not win2_active:
         win2_active = True
         window.hide()
